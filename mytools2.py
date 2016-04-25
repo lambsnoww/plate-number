@@ -369,7 +369,7 @@ def getBiIm(arr):
 
 
    
-for i in range(7, 9):
+for i in range(0, 9):
 
     opim = "car"  + str(i + 1) + ".jpg"
     imOrigin = Image.open(opim)
