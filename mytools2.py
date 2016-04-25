@@ -132,6 +132,7 @@ def paste(im1, im2, inte):
 
     c1 = list(im1.size)[0]
     r1 = list(im1.size)[1]
+   
     c2 = list(im2.size)[0]
     r2 = list(im2.size)[1]
     r = min(r1, r2)
