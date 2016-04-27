@@ -92,7 +92,7 @@ def findHorRange(im, ind):
 
 
 
-im = Image.open("car3.jpg")#原图
+im = Image.open("car8.jpg")#原图
 imbw = im.convert("L")#黑白图
 imbwArr = np.array(imbw)#黑白图的矩阵
 r = len(imbwArr)
@@ -118,7 +118,7 @@ maxIndex1, maxIndex2, max1, max2 = t2.findMaxCouple(SmoothedWhitepointSumArr, 0.
 print "find max couple!"
 
 l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
-print l, h
+print "alternative low and high edge: " + str(((l, h)))
     
 l = int(l - (h - l) * 0.1)
 h = int(h + (h - l) * 0.1) #竖直定位完成
@@ -129,7 +129,7 @@ lt, rt, fre = findHorRange(imXbi, m)
 outcome1 = (l, h, lt, rt, fre)
 ###########以下重复上面一段，对maxIndex2进行同样的操作
 l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex2, 0.5)#垂直定位函数（已找到其中一点的情况下）
-print l, h
+print "alternative low and high edge: " + str(((l, h)))
     
 l = int(l - (h - l) * 0.1)
 h = int(h + (h - l) * 0.1) #竖直定位完成
@@ -154,6 +154,26 @@ plateIm = plateIm.convert('L')#黑白化
 plateIm = t2.binaryzation(plateIm, 120)
 
 plateIm.show()
+
+l, h, lt, rt, fre = outcome
+le = int(l - (h - l) * 0.2)
+he = int(h + (h - l) * 0.2)
+lte = int(lt - (rt - lt) * 0.2)
+rte = int(rt + (rt - lt) * 0.2)
+
+outcomeE = (le, he, lte, rte)#进行0.2的扩张边缘，以防车牌缺角
+imForAdj = im.crop((outcomeE[2], outcomeE[0], outcomeE[3], outcomeE[1]))
+imForAdj.show()
+imForAdj = t2.binaryzation(imForAdj, 120)#二值化
+
+
+
+###################倾斜校正开始
+
+
+
+
+
 
 
 
