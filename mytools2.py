@@ -9,7 +9,7 @@ import Image, ImageDraw
 import numpy as np
 from scipy.stats.mstats_basic import tmax
 from _imaging import draw
-import mytools3
+
 from _ast import Add
 import colorsys
 from __builtin__ import True
@@ -163,30 +163,9 @@ def smooth(proArr, alp):
     retArr = [0 for i in range(ln)]
     for i in range(1, ln):
         retArr[i] = proArr[i] * alp + proArr[i - 1] * (1 - alp)
-    return retArr
-         
-def drawWave(arr, rows, cols):#默认arr的row数 = rows
-    im = Image.new('L', (cols, rows))
-    draw = ImageDraw.Draw(im)
-    ma = max(arr)
-    if ma > cols:
-        newArr = [0 for i in range(rows)]
-        for i in range(rows):
-            newArr[i] = arr[i] * cols / ma
-    else:
-        newArr = arr
-    
-    for i in range(0,rows):
-        for j in range(0,cols):
-            if j > newArr[i]:
-                draw.point([j,i],0)
-            else:
-                draw.point([j,i],255)
-    del draw
-#    im.show()
-    return im           
+    return retArr      
 
-def findMax(arr, rangePercent):
+def findMaxCouple(arr, rangePercent):
     l = len(arr)
     max1 = 0
     max2 = 0
@@ -205,39 +184,14 @@ def findMax(arr, rangePercent):
                 continue
     return (maxIndex1, maxIndex2, max1, max2)
                
-def findByVar(binIm, maxIndex1, maxIndex2, max1, max2):#可以废弃了
-    if maxIndex2 == 0:
-        return
-    sour = binIm.split()[0]
-    cols = list(binIm.size)[0]
-    rows = list(binIm.size)[1]
-    mat = [[0 for i in range(cols)] for j in range(rows)]
-    for i in range(rows):
-        for j in range(cols):
-            mat[i][j] = sour.getpixel((j, i))
-    std1 = np.std(mat[maxIndex1])
-    std2 = np.std(mat[maxIndex2])
-    print "std1 = " + str(std1) + ", std2 = " + str(std2)
-    print str(max1) + ',' + str(max2)
-    if std1 / max1 < std2 / max2: #这里并不正确，请注意！！！！！！！！！！！
-        return maxIndex1
-    else:
-        return maxIndex2
-    
-def drawLine(originIm, rowIndex):
-    draw = ImageDraw.Draw(originIm)
-    for i in range(list(originIm.size)[0]):
-        draw.point([i, rowIndex], (255, 0, 0))
-    return originIm
-
 def findVerRange(arr, maxIndex, scop):#找到车牌的竖直位置范围
 #    per = (0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45)
     per = (0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45 )
     for i in range(0, len(per)):
         a = min(int(maxIndex * (1 + per[i])), len(arr) - 1)
         if (arr[a] > (arr[maxIndex] * scop)):
-            print arr[maxIndex]
-            print (arr[a], (arr[maxIndex] * scop))
+#            print arr[maxIndex]
+#            print (arr[a], (arr[maxIndex] * scop))
             continue
         else:
             break
@@ -252,39 +206,14 @@ def findVerRange(arr, maxIndex, scop):#找到车牌的竖直位置范围
     lIndex = int(maxIndex * (1 - per[i]))
     
     return (lIndex, hIndex)
-    
-def crop2(im, r1, r2, c1, c2):
-
-    sour = im.split()
-    r = list(im.size)[1]
-    c = list(im.size)[0]
-    newIm = Image.new("L", (c2-c1+1, r2-r1+1))
-    draw = ImageDraw.Draw(newIm)
-    for i in range(0, r2-r1+1):
-        for j in range(0, c2-c1+1):
-            draw.point([j, i], sour[0].getpixel((c1 + j, r1 + i)))
-            
-    del draw
-#    newIm.show()
-    return newIm    
-
-def getArr(im):#从一幅binary或灰度图像得到它的矩阵
-    sour = im.split()
-    r = list(im.size)[1]
-    c = list(im.size)[0]
-    arr = [[0 for i in range(c)] for j in range(r)]
-    for i in range(c):
-        for j in range(r):
-            arr[j][i] = sour[0].getpixel((i, j))
-    return arr
-
+ 
 def decideFromTowAlternative(im, alt1, alt2):#二者择一，根据定长范围内点多点少
     r = list(im.size)[1]
     c = list(im.size)[0]
     
     frame = int(c / 3)#因为车牌通常都占图片横向的三分之一，所以以此长度为窗口计算出现数目，多者胜出
 #    step = 10#定义10为窗口移动单位
-    arr = getArr(im)
+    arr = np.array(im)
     verticalScope = 10#为了减小误差，令范围内上下各10像素之内的点参与到计算中
     alist= [[0 for i in range(c)] for j in range(0, 2)]
     alt = [alt1, alt2]
@@ -322,40 +251,6 @@ def sumForArr(arr, start, end):
         sum1  = sum1 + arr[i]
     return sum1
 
-def findHorRange(imBC):
-    r = list(imBC.size)[1]
-    c = list(imBC.size)[0]  
-    imArr = getArr(imBC)
-    ls = [0 for i in range(c)]
-    for i in range(r):
-        for j in range(c):
-            if imArr[i][j] > 0:
-                ls[j] = ls[j] + 1
-    im = drawWave(ls, c, max(ls))
-    im = im.rotate(90)
-#    im.show()
-    
-    ma = max(ls)
-    b = e = last = 0
-    flg = False
-    for i in range(c):
-        if ls[i] > ma * 0.5 and flg == False:#这个参数不能太大，不然会漏掉一部分
-            b = i
-            flg = True
-        elif ls[i] > ma * 0.5 and flg == True:
-            last = e
-            e = i
-            if e - last > c / 5 / 3 and last - b < c / 5 / 2:#这又来俩参数，哭。。。
-                flg = False
-            elif e - last > c / 5/ 3 and last - b > c / 5 / 2:
-                e = last
-                break
-            
-            
-#    print "************"
-#    print (b, e)
-    return (im, b, e)
-
 def getBiIm(arr):
     r = len(arr)
     c = len(arr[0])
@@ -374,94 +269,3 @@ def derivative(arr):
     for i in range(1, l):
         b[i] = arr[i - 1] + arr[i]
     return b
-
-#*********************************************************************************************   
-for i in range(6, 7):
-
-    opim = "car"  + str(i + 1) + ".jpg"
-    imOrigin = Image.open(opim)
-    im = Image.open(opim)
-    im.load()#IL is sometimes 'lazy' and 'forgets' to load after opening.
-    
-    r = list(im.size)[1]
-    c = list(im.size)[0]
-    
-    imbw = im.convert('L')#黑白化
-    imx, imy, imxy = findEdge(imbw)
-#    imxy.show()
-    imB = binaryzation(imx, 120)#参数待定！
-    imB.show()
-    arr2 = getArr(imB)
-#    print arr2
-    imMerged = horPro(imB)[0]
-#    imMerged.show()
-    arr = horPro(imB)[1]
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    arrSmoothed = smooth(arr, 0.6)
-    
-    a1, a2, m1, m2 = findMax(arrSmoothed, 0.2)
-    #maxIndex = findByVar(im, a1, a2, m1, m2)
-    print "a1 and a2: " + str(a1) + ',' + str(a2) 
-    if m1 * 0.7 > m2:
-        maxIndex = a1
-    else:
-        maxIndex = decideFromTowAlternative(imx, a1, a2)#虽然这里已经选定了，但是如果后面发现不对，可以再回来############################
-    print maxIndex
-    im2 = drawLine(imOrigin, maxIndex)
-    print "arrSmoothed[maxIndex]" + str(arrSmoothed[maxIndex])
-    l, h = findVerRange(arrSmoothed, maxIndex, 0.5)###scope这个参数留意下
-    print l, h
-    im2 = drawLine(imOrigin, l)
-    im2 = drawLine(imOrigin, h)
-#    im2.show()
-    
-    l = int(l - (h - l) * 0.3)
-    h = int(h + (h - l) * 0.3)#适当扩大范围
-
-    #region = (0, list(im.size)[0] - h, list(im.size)[1], list(im.size)[0] - h)
-    #imCroped = imOrigin.crop(region)
-    #imCroped.show()
-
-    imB.save("imB.bmp")
-    imcroped1 = crop2(imxy, l, h, 0, list(imB.size)[0] - 1)
-    imBCroped = binaryzation(imcroped1, 120)#参数待定！
-#    imBCroped.show()
-    #findHorRange(imcorped1)
-    
-    imHorWave, lt, rt = findHorRange(imBCroped)
-    pastev(imHorWave, imBCroped, 50)
-    lt = int(lt - (rt - lt) * 0.1)
-    rt = int(rt + (rt - lt) * 0.1)
-    #这里已经找到了坐标(l, h, lt, rt)啦（未验证范围请留意）
-    plateBW = crop2(imbw, l, h, lt, rt)
-    plateBW.show()
-    plateXY = crop2(imxy, l, h, lt, rt)
-    plateXY.show()
-#   plateBiEx = expandBiIm(plateBi)
-#   plateBiEx.show()
-    
-
-
-#    getBiIm(expand(getArr(binaryzation(plateBW, 120)))).show()
-#    binaryedIm = binaryzation(plateBW, 120)
-#    arr2 = expand(arr)
-#    BiIm = getBiIm(arr2)
-#    BiIm.show()
-    
-    
-    
-#    imSmoothed = drawWave(arrSmoothed, r, c / 2)
-    
-#    imMerged2 = paste(imSmoothed, im, 50)
-    #imMerged2.show()
-    
-    
-    #colorsys.rgb_to_hsv
-    
-    print "DONE@car" + str(i + 1) 
-
