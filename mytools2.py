@@ -15,10 +15,11 @@ import colorsys
 from __builtin__ import True
 from Carbon.Aliases import true
 from Tkconstants import LAST
+import matplotlib.pyplot as plt
 
 #找到边缘 + 二值化 + 竖起方向投影 + 光滑化
 
-def findEdge(im):
+def findEdge(im):#返回x、y、xy边缘图像三个，组成一个组 + 一般输入一个黑白图像
     newIm = Image.new('L',im.size)
     newIm2 = Image.new('L',im.size)
     newIm3 = Image.new('L',im.size)
@@ -159,9 +160,10 @@ def pastev(im1, im2, inte):
     return im
 def smooth(proArr, alp):
     ln = len(proArr)
+    retArr = [0 for i in range(ln)]
     for i in range(1, ln):
-        proArr[i] = proArr[i] * alp + proArr[i - 1] * (1 - alp)
-    return proArr
+        retArr[i] = proArr[i] * alp + proArr[i - 1] * (1 - alp)
+    return retArr
          
 def drawWave(arr, rows, cols):#默认arr的row数 = rows
     im = Image.new('L', (cols, rows))
@@ -228,7 +230,7 @@ def drawLine(originIm, rowIndex):
         draw.point([i, rowIndex], (255, 0, 0))
     return originIm
 
-def findVerRange(arr, maxIndex, scop):#找到车牌的水平位置范围
+def findVerRange(arr, maxIndex, scop):#找到车牌的竖直位置范围
 #    per = (0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45)
     per = (0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45 )
     for i in range(0, len(per)):
@@ -252,6 +254,7 @@ def findVerRange(arr, maxIndex, scop):#找到车牌的水平位置范围
     return (lIndex, hIndex)
     
 def crop2(im, r1, r2, c1, c2):
+
     sour = im.split()
     r = list(im.size)[1]
     c = list(im.size)[0]
@@ -263,10 +266,8 @@ def crop2(im, r1, r2, c1, c2):
             
     del draw
 #    newIm.show()
-    return newIm
-    
+    return newIm    
 
-    
 def getArr(im):#从一幅binary或灰度图像得到它的矩阵
     sour = im.split()
     r = list(im.size)[1]
@@ -355,7 +356,6 @@ def findHorRange(imBC):
 #    print (b, e)
     return (im, b, e)
 
-
 def getBiIm(arr):
     r = len(arr)
     c = len(arr[0])
@@ -367,9 +367,16 @@ def getBiIm(arr):
     del draw
     return im
 
+def derivative(arr):
+    l = len(arr)
+    b = [0 for i in range(l)]
+    b[0] = arr[0]
+    for i in range(1, l):
+        b[i] = arr[i - 1] + arr[i]
+    return b
 
-   
-for i in range(0, 9):
+#*********************************************************************************************   
+for i in range(6, 7):
 
     opim = "car"  + str(i + 1) + ".jpg"
     imOrigin = Image.open(opim)
@@ -387,7 +394,7 @@ for i in range(0, 9):
     arr2 = getArr(imB)
 #    print arr2
     imMerged = horPro(imB)[0]
-    imMerged.show()
+#    imMerged.show()
     arr = horPro(imB)[1]
     arrSmoothed = smooth(arr, 0.6)
     arrSmoothed = smooth(arr, 0.6)
