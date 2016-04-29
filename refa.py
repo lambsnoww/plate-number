@@ -13,6 +13,7 @@ import mytools as t1
 import mytools2 as t2
 from itertools import count
 from _Res import Count1Resources
+import Queue
 
 
 def getWhitepointSumArr(im, mode):
@@ -183,6 +184,36 @@ def getConnectedSetInfo2(im):
                 while(True):
                     brr[i + 1][j] = count
                     
+def getConnectedSetInfo3(im):#queue实现有误
+    im = ImageOps.expand(im, 1, 0)
+    arr = np.array(im)
+    r = len(arr)
+    c = len(arr[0])
+    brr = [[0 for i in range(c)] for j in range(r)]
+    count = 0
+    myqueue = Queue.LifoQueue(maxsize = -1)
+    for i in range(r):
+        for j in range(c):
+            if arr[i][j] > 0 and brr[i][j] ==  0:
+                count = count + 1
+                brr[i][j] = count
+                myqueue.put((i, j))
+                while(myqueue.not_empty):
+                    p, q = myqueue.get()
+                    if arr[p][q - 1] > 0 and brr[p][q - 1] == 0:
+                        brr[p][q - 1] = count
+                        myqueue.put((p, q - 1))
+                    if arr[p + 1][q] > 0 and brr[p + 1][q] == 0:
+                        brr[p + 1][q] = count
+                        myqueue.put((p + 1, q))
+                    if arr[p][q + 1] > 0 and brr[p][q + 1] == 0:
+                        brr[p][q + 1] = count
+                        myqueue.put((p, q + 1))
+                    if arr[p - 1][q] > 0 and brr[p - 1][q] == 0:
+                        brr[p - 1][q] = count
+                        myqueue.put((p - 1, q))
+    printArr(brr)
+    return (brr, count)
 
 def printArr(arr):
     r = len(arr)
@@ -280,58 +311,20 @@ cropedImFinal = im.crop((outcomeE[2], outcomeE[0], outcomeE[3], outcomeE[1]))
 
 #每次膨胀后，删除面积小于阀值的连通集（作为噪声）——这个思路先放放
 
-#while True:
-#    imForAdj = expand(imForAdj, 1, 0)
-#    brr, count = getConnectedSetInfo(imForAdj)
-#        deleteNoise(imForAdj)
-#    for i in range(len(brr)):
-#            for j in range(len(brr[0])):
-#                print brr[i][j],
-#            print
-#    break
-    
 
-#imForAdj = expand(imForAdj, 1, 0)
-#imForAdj.show()
 bor = int((rt - lt) * 0.4)
 im = cropedImFinal
 im = im.convert('L')
-#im = t2.findEdge(im)[2]#xy方向的变化都加入
+
 im = t2.binaryzation(im, 120)
 im = expand(im, 0, 2)
-#brr, count = getConnectedSetInfo(im)
-#for i in range(len(brr)):
-#    for j in range(len(brr[0])):
-#        print "%4d" % brr[i][j],
-#   print
-#print "How many connected set? " + str(count)
+brr, count = getConnectedSetInfo3(im)
 
-im = expand(im, 1, 3)
 
-brr, count = getConnectedSetInfo2(im)
 
-print "2*How many connected set? " + str(count)
 
-######################################################
-#如果找出来的“车牌”比例不对，我们有理由相信，之前的二选一，选错了，回去选另一个
-#scaleTmp = float(h - l) / (rt - lt)
-#scale = ((440.0/140) * 0.8, (440.0/140) * 1.2)
-#if (scaleTmp > scale[1] or scaleTmp < scale[0]):
-#    if plateIndex == maxIndex1:
-#        plateIndex = maxIndex2
-#    else:
-#        plateIndex = maxIndex1
-######################以下为重复代码：
-#l, h = t2.findVerRange(SmoothedWhitepointSumArr, plateIndex, 0.5)#垂直定位函数（已找到其中一点的情况下）
-#print l, h
-    
-#l = int(l - (h - l) * 0.1)
-#h = int(h + (h - l) * 0.1) #竖直定位完成
-#cropedImXbw = imXbw.crop((0, l, c - 1, h))
-#cropedImXbw.show()
-#m = int((l + h) / 2)
-#lt, rt, fre = findHorRange(imXbi, m)
-###########################################
+
+
 
 
 
