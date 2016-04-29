@@ -14,6 +14,7 @@ import mytools2 as t2
 from itertools import count
 from _Res import Count1Resources
 import Queue
+from __builtin__ import False
 
 
 def getWhitepointSumArr(im, mode):
@@ -106,114 +107,8 @@ def expand(im, n, m):#这里是bi二值图像，一次扩张n个像素(一般n =
                             brr[i + k][j + t] = 255
     image = t2.getBiIm(brr)
 #    print brr
-    image.show()
+#    image.show()
     return image
-
-def getConnectedSetInfo(im):#对一个二值图像，找连通集，并进行逐点标记
-    arr = np.array(im)
-#    print arr
-    r = len(arr)
-    c = len(arr[0])
-    brr = [[0 for i in range(c)] for j in range(r)]
-    count = 0
-    for i in range(r):
-        for j in range(c):
-            if arr[i][j] > 0 and brr[i][j] == 0:
-                count = count + 1
-                markConnectedSet(arr, brr, i, j, count)
-                print "count = "+ str(count)
-            else:
-                continue
-    return (brr, count)
-                
-def markConnectedSet(arr, brr, i, j, count):#递归地标记连通集????这里的递归太深了，不能用，换别的方法
-#    print (i, j),
-    r = len(arr)
-    c = len(arr[0])
-    if arr[i][j] == 0:
-        return
-    elif brr[i][j] > 0:
-        return
-    brr[i][j] = count#其它情况即有图像，而并未mark标记的点，进行一个递归的mark
-    if i - 1 > 0:
-        if j - 1 >= 0:
-            markConnectedSet(arr, brr, i - 1, j - 1, count)
-        if j + 1 < c:
-            markConnectedSet(arr, brr, i, j + 1, count)
-        markConnectedSet(arr, brr, i - 1, j, count)
-    if j - 1 >= 0:
-        markConnectedSet(arr, brr, i, j - 1, count)
-    if j + 1 < c:
-        markConnectedSet(arr, brr, i, j + 1, count)
-    if i + 1 < r:
-        if j - 1 >= 0:
-            markConnectedSet(arr, brr, i + 1, j - 1, count)
-        if j + 1 < c:
-            markConnectedSet(arr, brr, i, j + 1, count)
-        markConnectedSet(arr, brr, i + 1, j, count)
-    return
-
-def getConnectedSetInfo2(im):
-  
-    im = ImageOps.expand(im, 2, 0)#这里expand了2个像素，为什么是两个呢？一会儿你就知道了
-    arr = np.array(im)
-    print "print expanded arr: "
-    printArr(arr)
-    r = len(arr)
-    c = len(arr[0])
-    for i in range(r):
-        for j in range(c):
-            if arr[i][j] == 255:
-                for s in range(-1, 2):
-                    for t in range(-1, 2):
-                        if arr[i + s][j + t] == 0:
-                            arr[i + s][j + t] = 100#arr这个由图像得来的数组居然存不了-1！-1当作255存了
-#                            printArr(arr)
-#                            print "  *" * 50,
-#                            print " **" * 50,
-#                            print "***" * 50,
-#                            print "  *" * 50,
-#                            print " **" * 50,
-#                            print "***" * 50
-    brr = [[0 for i in range(c)] for j in range(r)]
-    count = 0
-    for i in range(r):
-        for j in range(c):
-            if arr[i][j] == 100 and arr[i + 1][j] == 255:
-                count = count + 1
-                while(True):
-                    brr[i + 1][j] = count
-                    
-def getConnectedSetInfo3(im):#queue实现有误
-    im = ImageOps.expand(im, 1, 0)
-    arr = np.array(im)
-    r = len(arr)
-    c = len(arr[0])
-    brr = [[0 for i in range(c)] for j in range(r)]
-    count = 0
-    myqueue = Queue.LifoQueue(maxsize = -1)
-    for i in range(r):
-        for j in range(c):
-            if arr[i][j] > 0 and brr[i][j] ==  0:
-                count = count + 1
-                brr[i][j] = count
-                myqueue.put((i, j))
-                while(myqueue.not_empty):
-                    p, q = myqueue.get()
-                    if arr[p][q - 1] > 0 and brr[p][q - 1] == 0:
-                        brr[p][q - 1] = count
-                        myqueue.put((p, q - 1))
-                    if arr[p + 1][q] > 0 and brr[p + 1][q] == 0:
-                        brr[p + 1][q] = count
-                        myqueue.put((p + 1, q))
-                    if arr[p][q + 1] > 0 and brr[p][q + 1] == 0:
-                        brr[p][q + 1] = count
-                        myqueue.put((p, q + 1))
-                    if arr[p - 1][q] > 0 and brr[p - 1][q] == 0:
-                        brr[p - 1][q] = count
-                        myqueue.put((p - 1, q))
-    printArr(brr)
-    return (brr, count)
 
 def printArr(arr):
     r = len(arr)
@@ -222,123 +117,124 @@ def printArr(arr):
         for j in range(c):
             print "%3d" % arr[i][j],
         print
+        
+def findPlateEdge(im):
+    arr = np.array(im)
+    r = len(arr)
+    c = len(arr[0])
+    setNumForRow = [0 for i in range(r)]
+    for i in range(r):
+        setNum = 0
+        flag = False
+        for j in range(c):
+            if arr[i][j] > 0 and flag == False:
+                flag = True
+                setNum = setNum + 1
+            elif arr[i][j] > 0 and flag == True:
+                continue
+            elif arr[i][j] == 0 and flag == True:
+                flag = False
                 
+        setNumForRow[i] = setNum
+        print setNumForRow
+    return setNumForRow
 
-im = Image.open("car8.jpg")#原图
-imOrigin = Image.open("car8.jpg")
-imbw = im.convert("L")#黑白图
-imbwArr = np.array(imbw)#黑白图的矩阵
-r = len(imbwArr)
-c = len(imbwArr[1])
-print "原始图像尺寸：" + str((r, c))
-imXbw = t2.findEdge(imbw)[0]#X方向的黑白图
-#imXbw.show()
-imXbwArr = np.array(imXbw)
-imXbi = t2.binaryzation(imXbw, 120)#二值化的X方向的黑白图
-
-x = [i + 1 for i in range(r)]
-WhitepointSumArr = getWhitepointSumArr(imXbi, 'r')
-#plt.plot(x, y)
-#plt.show()
-SmoothedWhitepointSumArr = t2.smooth(WhitepointSumArr, 0.6)
-SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
-SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
-SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
-plt.plot(x, SmoothedWhitepointSumArr)
-#plt.show()
-
-
-
-                
-                
-                
-                
-                
-                
-
-maxIndex1, maxIndex2, max1, max2 = t2.findMaxCouple(SmoothedWhitepointSumArr, 0.2)
-print "find max couple!"
-
-l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
-print "alternative low and high edge: " + str(((l, h)))
+def run():
+    name = "car7"
+    im = Image.open(name + ".jpg")#原图
+    imOrigin = Image.open("car7.jpg")
+    imbw = im.convert("L")#黑白图
+    imbwArr = np.array(imbw)#黑白图的矩阵
+    r = len(imbwArr)
+    c = len(imbwArr[1])
+    print "原始图像尺寸：" + str((r, c))
+    imXbw = t2.findEdge(imbw)[0]#X方向的黑白图
+    #imXbw.show()
+    imXbwArr = np.array(imXbw)
+    imXbi = t2.binaryzation(imXbw, 120)#二值化的X方向的黑白图
     
-l = int(l - (h - l) * 0.1)
-h = int(h + (h - l) * 0.1) #竖直定位完成
-#cropedImXbw = imXbw.crop((0, l, c - 1, h))
-#cropedImXbw.show()
-m = int((l + h) / 2)
-lt, rt, fre = findHorRange(imXbi, m)
-outcome1 = (l, h, lt, rt, fre)
-###########以下重复上面一段，对maxIndex2进行同样的操作
-l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex2, 0.5)#垂直定位函数（已找到其中一点的情况下）
-print "alternative low and high edge: " + str(((l, h)))
+    x = [i + 1 for i in range(r)]
+    WhitepointSumArr = getWhitepointSumArr(imXbi, 'r')
+    #plt.plot(x, y)
+    #plt.show()
+    SmoothedWhitepointSumArr = t2.smooth(WhitepointSumArr, 0.6)
+    SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
+    SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
+    SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
+    plt.plot(x, SmoothedWhitepointSumArr)
+    #plt.show()
+            
+    maxIndex1, maxIndex2, max1, max2 = t2.findMaxCouple(SmoothedWhitepointSumArr, 0.2)
+    print "find max couple!"
     
-l = int(l - (h - l) * 0.1)
-h = int(h + (h - l) * 0.1) #竖直定位完成
-#cropedImXbw = imXbw.crop((0, l, c - 1, h))
-#cropedImXbw.show()
-m = int((l + h) / 2)
-lt, rt, fre = findHorRange(imXbi, m)
-outcome2 = (l, h, lt, rt, fre)
-########################################
-if outcome1[4] > outcome2[4]:
-    outcome = outcome1
-else:
-    outcome = outcome2
-
-print outcome#(l, h, lt, rt, fre) vs (lt, l, rt, h)
-#cropedImFinal = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
-#cropedImFinal.show()
-#车牌已定位，下面进行倾斜校正
-
-
-l, h, lt, rt, fre = outcome
-le = int(l - (h - l) * 0.4)
-he = int(h + (h - l) * 0.4)
-lte = int(lt - (rt - lt) * 0.4)
-rte = int(rt + (rt - lt) * 0.4)
-
-
-
-outcomeE = (le, he, lte, rte)#进行0.2的扩张边缘，以防车牌缺角
-cropedImFinal = im.crop((outcomeE[2], outcomeE[0], outcomeE[3], outcomeE[1]))
-#imForAdj.show()
-#imForAdj = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
-#imForAdj = t2.binaryzation(imForAdj, 120)#二值化
-###################倾斜校正开始
-
-
-
-#每次膨胀后，删除面积小于阀值的连通集（作为噪声）——这个思路先放放
-
-
-bor = int((rt - lt) * 0.4)
-im = cropedImFinal
-im = im.convert('L')
-
-im = t2.binaryzation(im, 120)
-im = expand(im, 0, 2)
-brr, count = getConnectedSetInfo3(im)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-print "DONE@"
+    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
+    print "alternative low and high edge: " + str(((l, h)))
+        
+    l = int(l - (h - l) * 0.1)
+    h = int(h + (h - l) * 0.1) #竖直定位完成
+    #cropedImXbw = imXbw.crop((0, l, c - 1, h))
+    #cropedImXbw.show()
+    m = int((l + h) / 2)
+    lt, rt, fre = findHorRange(imXbi, m)
+    outcome1 = (l, h, lt, rt, fre)
+    ###########以下重复上面一段，对maxIndex2进行同样的操作
+    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex2, 0.5)#垂直定位函数（已找到其中一点的情况下）
+    print "alternative low and high edge: " + str(((l, h)))
+        
+    l = int(l - (h - l) * 0.1)
+    h = int(h + (h - l) * 0.1) #竖直定位完成
+    #cropedImXbw = imXbw.crop((0, l, c - 1, h))
+    #cropedImXbw.show()
+    m = int((l + h) / 2)
+    lt, rt, fre = findHorRange(imXbi, m)
+    outcome2 = (l, h, lt, rt, fre)
+    ########################################
+    if outcome1[4] > outcome2[4]:
+        outcome = outcome1
+    else:
+        outcome = outcome2
+    
+    print outcome#(l, h, lt, rt, fre) vs (lt, l, rt, h)
+    #cropedImFinal = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
+    #cropedImFinal.show()
+    #车牌已定位，暂时跳过倾斜校正
+    
+    
+    l, h, lt, rt, fre = outcome
+    le = int(l - (h - l) * 0.4)
+    he = int(h + (h - l) * 0.4)
+    lte = int(lt - (rt - lt) * 0.4)
+    rte = int(rt + (rt - lt) * 0.4)
+    
+    
+    
+    outcomeE = (le, he, lte, rte)#进行0.2的扩张边缘，以防车牌缺角
+    plateIm = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
+    plateIm.show()
+    plateImbw = plateIm.convert('L')
+    plateImbw.show()
+    plateImbi = t2.binaryzation(plateImbw, 120)
+    plateImbi.show()
+    
+    plateImbi.save(name + ".bmp")
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    print "DONE@"
+      
