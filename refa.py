@@ -136,13 +136,32 @@ def findPlateEdge(im):
                 flag = False
                 
         setNumForRow[i] = setNum
-        print setNumForRow
+#        print setNumForRow
     return setNumForRow
 
+def drawWaveByRow(arr, num):
+    l = len(arr)
+    ma = max(arr)
+    brr = [[0 for i in range(l)] for j in range(num)]
+    crr = [0 for i in range(l)]
+    for i in range(l):
+        crr[i] = float(arr[i]) * num / ma            
+    for i in range(l):
+        for j in range(num):
+            if num - j < crr[i]:
+                brr[j][i] = 255
+            else:
+                brr[j][i] = 0
+    
+    im = t2.getBiIm(brr)
+    im.show()
+    return im
+                
+
 def run():
-    name = "car7"
+    name = "car1"
     im = Image.open(name + ".jpg")#原图
-    imOrigin = Image.open("car7.jpg")
+    imOrigin = Image.open(name + ".jpg")
     imbw = im.convert("L")#黑白图
     imbwArr = np.array(imbw)#黑白图的矩阵
     r = len(imbwArr)
@@ -218,23 +237,8 @@ def run():
     
     plateImbi.save(name + ".bmp")
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     print "DONE@"
+    
+    
+run()
       
