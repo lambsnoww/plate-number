@@ -158,10 +158,10 @@ def drawWaveByRow(arr, num):
     return im
                 
 
-def run():
-    name = "car1"
+def runFindPlate(name):
     im = Image.open(name + ".jpg")#原图
-    imOrigin = Image.open(name + ".jpg")
+    im = t1.preprocess(im)
+    imOrigin = im 
     imbw = im.convert("L")#黑白图
     imbwArr = np.array(imbw)#黑白图的矩阵
     r = len(imbwArr)
@@ -232,13 +232,17 @@ def run():
     plateIm.show()
     plateImbw = plateIm.convert('L')
     plateImbw.show()
-    plateImbi = t2.binaryzation(plateImbw, 120)
+    plateImbi = t2.binaryzation(plateImbw, 220)
     plateImbi.show()
     
-    plateImbi.save(name + ".bmp")
+    os.makedirs("cars/" + name)#把车牌号存起来待用
+    plateImbi.save("cars/" + name + '/'+ name + ".bmp")
+    plateImbi.save("cars/" + name + '/'+ name + "bi.bmp")
+    plateIm.save("cars/" + name + '/'+ name + "Origin.jpg")
+    plateImbw.save("cars/" + name + '/'+ name + "bw.jpg")
     
     print "DONE@"
     
     
-run()
+#runFindPlate("car7")
       

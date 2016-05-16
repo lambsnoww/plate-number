@@ -94,6 +94,12 @@ def hist(im):#直方图均衡化
                                (int)(arr2[b]/arr2[255]*255)))
     del draw
     return im
+
+def preprocess(im):
+    im = userFilter(im, "filter")    
+    im = userFilter(im, "sharpen")    
+    im = hist(im)
+    return im
     
 
     
