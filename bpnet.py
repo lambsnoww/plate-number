@@ -23,29 +23,30 @@ import thinner
 from pybrain.structure import FeedForwardNetwork
 from pybrain.structure import LinearLayer, SigmoidLayer
 from pybrain.structure import FullConnection
+from pybrain.tools.shortcuts import buildNetwork
+from pybrain.datasets import SupervisedDataSet
+from pybrain.supervised.trainers.backprop import BackpropTrainer
 
-n = FeedForwardNetwork()
-inLayer = LinearLayer(16, name = 'Input')
-hiddenLayer = SigmoidLayer(4, name = 'Hidden')#5-14都试下
-outLayer = LinearLayer(1, name = 'Output')
+if __name__ == "__main__":
+    fnn = buildNetwork(16, 4, 1, bias = True)
+    fnn.activate([1 for i in range(16)])
+    ds = SupervisedDataSet(16, 1)
+    for i in range(len(train)):
+        ds.addSample(train[i], label[i])
+    #trainer = BackpropTrainer(fnn, ds, momentum = 0.1, verbose = True, weightdecay = 0.01)
+    trainer = BackpropTrainer(fnn, ds)
+    print "start the training..."
+    #trainer.trainEpochs(epochs = 500)#利用低度下降法训练500次
+    trainer.trainUntilConvergence()
+    
+    print "start returning the result"
+    print fnn.activate((x1, x2, x3, x4, x5, x6, x7, x8, x9,\
+                        x10, x11, x12, x13, x14, x15))#进行预测
+    
+    
 
-n.addInputModule(inLayer)
-n.addModule(hiddenLayer)
-n.addOutputModule(outLayer)
 
-in_to_hidden = FullConnection(inLayer, hiddenLayer)
-hidden_to_out = FullConnection(hiddenLayer, outLayer)
-n.addConnection(in_to_hidden)
-n.addConnection(hidden_to_out)
 
-n.sortModules()
 
-print n
-
-print n.activate([1 for i in range(16)])
-
-print in_to_hidden.params
-print hidden_to_out.params
-print n.params
 
 
