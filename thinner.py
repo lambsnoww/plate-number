@@ -21,18 +21,20 @@ import collections
 import matlab
 import matlab.engine
 
-def thin(eng, name):#调用matlab的bwmorph对图像进行细化 and 保存为jpg格式
+def thin(eng, name, type):#调用matlab的bwmorph对图像进行细化 and 保存为jpg格式
     print "Start thin process"
-    eng.eval("imbi = imread('%d.bmp');"%name, nargout = 0)
+    eng.eval("imbi = imread('%s.%s');"%(name, type), nargout = 0)
     eng.eval("imthin = bwmorph(imbi, 'thin', Inf);", nargout = 0)
-    imbipy = Image.open('1.bmp')
-    c = list(imbipy.size)[0]
-    r = list(imbipy.size)[1]
+#    imbipy = Image.open('1.bmp')
+#    c = list(imbipy.size)[0]
+#    r = list(imbipy.size)[1]
+    c = 20
+    r = 22
     print "c, r = " + str(c) + ',' + str(r)
     eval_str = "imshow(imthin,'border','tight','initialmagnification','fit');\
         set (gcf,'Position',[0,0,%d,%d]);axis normal;"%(c, r)
     eng.eval(eval_str, nargout = 0)
-    eng.eval("imwrite(imthin,'%d.jpg', 'jpg');"%name, nargout = 0)#这个才好用
+    eng.eval("imwrite(imthin,'%s.jpg', 'jpg');"%name, nargout = 0)#这个才好用
 #    eng.eval("saveas(gcf, '2thin', 'bmp');", nargout = 0)
     print "Thinned pic saved!"
 
@@ -74,13 +76,33 @@ def getPointNumber(im):#返回（123叉点的个数数组， 3叉点的位置向
         for j in range(c):
             if arr[i][j] > 200:
                 count[0] = count[0] + 1
-                neighbors = -1
-                for l in range(-1, 2):
-                    for k in range(-1, 2):
-                        if arr[i + l][j + k] > 200:
-                            neighbors = neighbors + 1
-                count[neighbors] = count[neighbors] + 1
-                if neighbors == 3:
+                p1 = p2 = p3 = p4 = p5 = p6 = p7 = p8 = 0
+                if arr[i - 1][j] > 200:
+                    p1 = 1
+                if arr[i - 1][j - 1] > 200:
+                    p2 = 1
+                if arr[i][j - 1] > 200:
+                    p3 = 1
+                if arr[i + 1][j - 1] > 200:
+                    p4 = 1
+                if arr[i + 1][j] > 200:
+                    p5 = 1
+                if arr[i + 1][j + 1] > 200:
+                    p6 = 1
+                if arr[i][j + 1] > 200:
+                    p7 = 1
+                if arr[i - 1][j + 1] > 200:
+                    p8 = 1
+                T = abs(p2 - p1) + abs(p3 - p2) + abs(p4 - p3) \
+                + abs(p5 - p4) + abs(p6 - p5) + abs(p7 - p6) \
+                + abs(p8 - p7) + abs(p1 - p8)
+                T = T / 2
+                if T == 1:
+                    count[1] = count[1] + 1
+                if T == 2:
+                    count[2] = count[2] + 1
+                if T == 3:
+                    count[3] = count[3] + 1
                     three[count[3] - 1] = (i - 1, j - 1)#另忘了这里对图片expand了
     return (count, three)               
 
@@ -117,30 +139,44 @@ def getNumberOfHorizontalLines(im):#返回多少条水平线，水平线各有�
     return (numOfLines, lines)
 
 def getEdgePointsPosition(im):#返回左上、左下、右上、右下点的坐标
+#这里的A左右两个“腿”也许并不一样长，导致左下==右下，这个问题留待后面说
     arr = np.array(im)
     r = len(arr)
     c = len(arr[0])
     ret = [(0,0) for i in range(4)]
+    flag = False
     for i in range(r):
         for j in range(c):
             if arr[i][j] > 200:
                 ret[0] = (i, j)
                 break
+        else:#这个是内层for循环的else分支，for正常结束时进入，否则就跳过这个else
+            continue
+        break
     for i in range(r):
         for j in range(c):
             if arr[r - 1 - i][j] > 200:
                 ret[1] = (r - 1 - i, j)
                 break
+        else:
+            continue
+        break
     for i in range(r):
         for j in range(c):
             if arr[i][c - 1 - j] > 200:
                 ret[2] = (i, c - 1 - j)
                 break
+        else:
+            continue
+        break
     for i in range(r):
         for j in range(c):
             if arr[r - 1 - i][c - 1 - j] > 200:
                 ret[3] = (r - 1 - i, c - 1 - j)
                 break
+        else:
+            continue
+        break
     return ret
     
     
@@ -148,8 +184,8 @@ if __name__ == "__main__":
     print "Initializing Matlab Engine"
     eng = matlab.engine.start_matlab()
     print "Initializing Complete!"
-    name = 3
-    thin(eng, name)
+    name = '5'
+    thin(eng, name, "bmp")
     im = Image.open(str(name) + ".jpg")
     verLines, lines = getNumberOfVerticalLines(im)
     print "vetical lines: " + str(verLines)

@@ -28,9 +28,9 @@ from pybrain.datasets import SupervisedDataSet
 from pybrain.supervised.trainers.backprop import BackpropTrainer
 
 if __name__ == "__main__":
-    fnn = buildNetwork(16, 4, 1, bias = True)
+    fnn = buildNetwork(16, 21, 23, bias = True)
     fnn.activate([1 for i in range(16)])
-    ds = SupervisedDataSet(16, 1)
+    ds = SupervisedDataSet(16, 23)
     for i in range(len(train)):
         ds.addSample(train[i], label[i])
     #trainer = BackpropTrainer(fnn, ds, momentum = 0.1, verbose = True, weightdecay = 0.01)
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     
     print "start returning the result"
     print fnn.activate((x1, x2, x3, x4, x5, x6, x7, x8, x9,\
-                        x10, x11, x12, x13, x14, x15))#进行预测
+                        x10, x11, x12, x13, x14, x15, x16))#进行预测
     
     
 

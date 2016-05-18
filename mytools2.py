@@ -94,6 +94,23 @@ def binaryzation(im, n):
     del draw
     return newIm
 
+def binaryzationpng(im, n):
+    arr = np.array(im)
+    r = len(arr)
+    c = len(arr[0])
+    newIm = Image.new('L', (c, r))
+    draw = ImageDraw.Draw(newIm)
+    for i in range(r):
+        for j in range(c):
+            if arr[i][j] >= n:
+                draw.point([j, i], 255)
+            else:
+                draw.point([j, i], 0)
+    del draw
+    return newIm
+                
+    
+
 def horPro(im):#竖直方向的投影
 
     cols = list(im.size)[0]
