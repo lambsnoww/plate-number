@@ -9,13 +9,13 @@ import Image, ImageDraw
 import numpy as np
 from scipy.stats.mstats_basic import tmax
 from _imaging import draw
-
 from _ast import Add
 import colorsys
 from __builtin__ import True
 from Carbon.Aliases import true
 from Tkconstants import LAST
 import matplotlib.pyplot as plt
+import copy
 
 #找到边缘 + 二值化 + 竖起方向投影 + 光滑化
 
@@ -165,24 +165,40 @@ def smooth(proArr, alp):
         retArr[i] = proArr[i] * alp + proArr[i - 1] * (1 - alp)
     return retArr      
 
-def findMaxCouple(arr, rangePercent):
+def findMaxTriple(a, rangePercent):
+    arr = copy.deepcopy(a)
     l = len(arr)
     max1 = 0
     max2 = 0
+    max3 = 0
     maxIndex1 = 0
     maxIndex2 = 0
+    maxIndex3 = 0
     for i in range(l):
         if arr[i] > max1:
             max1 = arr[i]
             maxIndex1 = i
+    arr[maxIndex1] = 0
+
     for i in range(l):
-        if arr[i] > max2 and arr[i] < arr[maxIndex1]:
+        if arr[i] > max2:
             if (i >= maxIndex1 + rangePercent * l) or (i <= maxIndex1 - rangePercent * l):
                 max2 = arr[i]
                 maxIndex2 = i
             else:
+                arr[i] = 0
                 continue
-    return (maxIndex1, maxIndex2, max1, max2)
+    arr[maxIndex2] = 0
+    for i in range(l):
+        if arr[i] > max3:# and arr[i] < arr[maxIndex2]:
+            if ((i >= maxIndex1 + rangePercent * l) or (i <= maxIndex1 - rangePercent * l))\
+            and ((i >= maxIndex2 + rangePercent * l) or (i <= maxIndex2 - rangePercent *l)):
+                max3 = arr[i]
+                maxIndex3 = i
+            else:
+                arr[i] = 0
+                continue
+    return (maxIndex1, maxIndex2, maxIndex3, max1, max2, max3)
                
 def findVerRange(arr, maxIndex, scop):#找到车牌的竖直位置范围
 #    per = (0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45)

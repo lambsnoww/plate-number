@@ -36,6 +36,7 @@ def getWhitepointSumArr(im, mode):
                     retArr[i] = retArr[i] + 1
     return retArr
 
+#返回(startIndex, endIndex, count)三元组，其中count达到最大
 def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在的水平位置
 #    arr = getWhitepointSumArr(im, 'c')
 
@@ -89,7 +90,7 @@ def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在�
     maxCount = 0    
     maxInd = 0
     for i in range(len(findList)):
-        print findList[i]
+#        print findList[i]
         if findList[i][2] > maxCount:
             maxCount = findList[i][2]
             maxInd = i
@@ -167,15 +168,15 @@ def runFindPlate(im):#run run run
     imOrigin = im 
     imbw = im.convert("L")#黑白图
     imbwArr = np.array(imbw)#黑白图的矩阵
-    r = len(imbwArr)
-    c = len(imbwArr[1])
-    print "原始图像尺寸：" + str((r, c))
+    row = len(imbwArr)
+    col = len(imbwArr[1])
+    print "原始图像尺寸：" + str((row, col))
     imXbw = t2.findEdge(imbw)[0]#X方向的黑白图
     #imXbw.show()
     imXbwArr = np.array(imXbw)
     imXbi = t2.binaryzation(imXbw, 120)#二值化的X方向的黑白图
     
-    x = [i + 1 for i in range(r)]
+    x = [i + 1 for i in range(row)]
     WhitepointSumArr = getWhitepointSumArr(imXbi, 'r')
     #plt.plot(x, y)
     #plt.show()
@@ -183,42 +184,79 @@ def runFindPlate(im):#run run run
     SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
     SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
     SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
-    plt.plot(x, SmoothedWhitepointSumArr)
-    plt.show()
-            
-    maxIndex1, maxIndex2, max1, max2 = t2.findMaxCouple(SmoothedWhitepointSumArr, 0.2)
-    print "find max couple!"
+#    plt.plot(x, SmoothedWhitepointSumArr)
+#    plt.show()
     
-    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
-    print "alternative low and high edge: " + str(((l, h)))
+    maxIndex1, maxIndex2, maxIndex3, max1, max2, max3 \
+        = t2.findMaxTriple(SmoothedWhitepointSumArr, 0.2)
+    print "find max triple! -- ",
+    print maxIndex1, maxIndex2, maxIndex3
+    
+    maxIndex = [maxIndex1, maxIndex2, maxIndex3]
+#    l = [0 for i in range(3)]
+#    h = [0 for i in range(3)]
+#    m = [0 for i in range(3)]
+#    lt = [0 for i in range(3)]
+#    rt = [0 for i in range(3)]
+#    fre = [0 for i in range(3)]
+    outcome = [(0,0,0,0,0) for i in range(3)]
+    plateIm = []
+    print "outcome :",
+    for i in range(3):
+        #垂直定位函数（已找到其中一点的情况下）
+        l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex[i], 0.5)
+#        l = int(l - (h - l * 0.1))
+#        h = int(l - (h - l * 0.1))
+        m = int((l + h) / 2)
+        lt, rt, fre = findHorRange(imXbi, m)
+        outcome[i] = (l, h, lt, rt, fre)
+        outcome[i] = expandPlateScope((l, h, lt, rt, fre), 0.1, row, col)
+        print outcome[i],
+        imshow = im.crop((outcome[i][2], outcome[i][0], outcome[i][3], outcome[i][1]))
+        plateIm.append(imshow)
+        imshow.show()
+    hsv = [[0 for i in range(3)] for j in range(3)]
+    ratio = [0.0 for i in range(3)]
+#    print len(plateIm)
+    for i in range(3):
+#        plateIm[i].show()
+        hsv[i] = myhsv.RGBtoHSV(plateIm[i])
+        ratio[i] = calculateBlueRatio(hsv[i][0], hsv[i][1], hsv[i][2])
+    print "ratio : ",
+    print ratio[i], ratio[1], ratio[2]
+
+    print "DONE@"    
+    
+#    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
+#    print "alternative low and high edge: " + str(((l, h)))
         
-    l = int(l - (h - l) * 0.1)
-    h = int(h + (h - l) * 0.1) #竖直定位完成
-    cropedImXbi = imXbi.crop((0, l, c - 1, h))
-    cropedImXbi.show()
-    m = int((l + h) / 2)
-    lt, rt, fre = findHorRange(imXbi, m)
-    outcome1 = (l, h, lt, rt, fre)
+#    l = int(l - (h - l) * 0.1)
+#    h = int(h + (h - l) * 0.1) #竖直定位完成
+#    cropedImXbi = imXbi.crop((0, l, c - 1, h))
+#    cropedImXbi.show()
+#    m = int((l + h) / 2)
+#    lt, rt, fre = findHorRange(imXbi, m)
+#    outcome1 = (l, h, lt, rt, fre)
     ###########以下重复上面一段，对maxIndex2进行同样的操作
-    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex2, 0.5)#垂直定位函数（已找到其中一点的情况下）
-    print "alternative low and high edge: " + str(((l, h)))
+#    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex2, 0.5)#垂直定位函数（已找到其中一点的情况下）
+#    print "alternative low and high edge: " + str(((l, h)))
         
-    l = int(l - (h - l) * 0.1)
-    h = int(h + (h - l) * 0.1) #竖直定位完成
+#    l = int(l - (h - l) * 0.1)
+#    h = int(h + (h - l) * 0.1) #竖直定位完成
     #cropedImXbw = imXbw.crop((0, l, c - 1, h))
     #cropedImXbw.show()
-    m = int((l + h) / 2)
-    lt, rt, fre = findHorRange(imXbi, m)
-    outcome2 = (l, h, lt, rt, fre)
+#    m = int((l + h) / 2)
+#    lt, rt, fre = findHorRange(imXbi, m)
+#    outcome2 = (l, h, lt, rt, fre)
     ########################################
 #这里对outcome的选取考虑两个因素：fre和hsv蓝白比例。私以为第二个更重要
-    outcome1 = expandPlateScope(outcome1, 0.4)
-    outcome2 = expandPlateScope(outcome2, 0.4)
-    plateIm1 = im.crop((outcome1[2], outcome1[0], outcome1[3], outcome1[1]))
-    plateIm2 = im.crop((outcome2[2], outcome2[0], outcome2[3], outcome2[1]))
+#    outcome1 = expandPlateScope(outcome1, 0.4)
+#    outcome2 = expandPlateScope(outcome2, 0.4)
+#    plateIm1 = im.crop((outcome1[2], outcome1[0], outcome1[3], outcome1[1]))
+#    plateIm2 = im.crop((outcome2[2], outcome2[0], outcome2[3], outcome2[1]))
     
-    h1, s1, v1 = myhsv.RGBtoHSV(plateIm1)
-    h2, s2, v2 = myhsv.RGBtoHSV(plateIm2)
+#    h1, s1, v1 = myhsv.RGBtoHSV(plateIm1)
+#    h2, s2, v2 = myhsv.RGBtoHSV(plateIm2)
     
 #蓝色车牌
 #H值范围：190 ~ 245
@@ -227,9 +265,9 @@ def runFindPlate(im):#run run run
     
 
     
-    ratio1 = calculateBlueRatio(h1, s1, v1)
-    ratio2 = calculateBlueRatio(h2, s2, v2)
-    print ratio1, ratio2
+#    ratio1 = calculateBlueRatio(h1, s1, v1)
+#    ratio2 = calculateBlueRatio(h2, s2, v2)
+#    print ratio1, ratio2
     
 
     
@@ -258,17 +296,21 @@ def runFindPlate(im):#run run run
 #    plateIm.save("cars/" + name + '/'+ name + "Origin.jpg")
 #    plateImbw.save("cars/" + name + '/'+ name + "bw.jpg")
     
-    print "DONE@"
+    
 
-def expandPlateScope(outcome, percent):
+def expandPlateScope(outcome, percent, row, col):
     l, h, lt, rt, fre = outcome
-    le = int(l - (h - l) * percent)
-    he = int(h + (h - l) * percent)
-    lte = int(lt - (rt - lt) * percent)
-    rte = int(rt + (rt - lt) * percent)  
+    le = max(0, int(l - (h - l) * percent))
+    he = min(row - 1, int(h + (h - l) * percent))
+    lte = max(0, int(lt - (rt - lt) * percent))
+    rte = min(col - 1, int(rt + (rt - lt) * percent))  
     outcomeE = (le, he, lte, rte, fre)#进行0.2的扩张边缘，以防车牌缺角
     return outcomeE
 
+#蓝色车牌
+#H值范围：190 ~ 245
+#S值范围： 0.35 ~ 1
+#V值范围： 0.3 ~ 1
 def calculateBlueRatio(h, s, v):
     r = float(len(h))
     c = len(h[1])
@@ -278,7 +320,7 @@ def calculateBlueRatio(h, s, v):
             and i[1] >= 0.35 and i[1] <= 1
             and i[2] >= 0.3 and i[2] <=1):
             count = count + 1
-    return count / (r * c)        
+    return count / (r * c)
     
 #runFindPlate("car7")
       
