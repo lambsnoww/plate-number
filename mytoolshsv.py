@@ -7,6 +7,7 @@ Created on 2016年5月19日
 import numpy as np
 import Image, ImageDraw, ImageOps, colorsys
 from ensurepip import __main__
+import mytools2 as t2
 
 def RGBtoHSV(im):
     arr = np.array(im)
@@ -55,7 +56,24 @@ def findmaxArr(arr):
     else:
         return 1
 
-
+#蓝色车牌
+#H值范围：190 ~ 245
+#S值范围： 0.35 ~ 1
+#V值范围： 0.3 ~ 1
+def findBlueareaFromIm(im):
+    h, s, v = RGBtoHSV(im)
+    r = len(h)
+    c = len(h[0])
+    arr = [[0 for i in range(c)] for j in range(r)]
+    for i in range(r):
+        for j in range(c):
+            if h[i][j] >= 190 and h[i][j] <= 245:
+                arr[i][j] = 255
+            else:
+                arr[i][j] = 0
+    scopeIm = t2.getBiIm(arr)
+    scopeIm.show()
+    return scopeIm
             
 
 if __name__ == "__main__":

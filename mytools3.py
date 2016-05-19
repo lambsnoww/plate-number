@@ -1,3 +1,4 @@
+
 #-*-coding:utf-8-*-
 '''
 Created on 2016年4月26日
@@ -210,11 +211,13 @@ def runFindPlate(im):#run run run
         m = int((l + h) / 2)
         lt, rt, fre = findHorRange(imXbi, m)
         outcome[i] = (l, h, lt, rt, fre)
+        #outcome的最后一个量fre代表频率次数，一般越大，可能性越高，但也不绝对，因此只能作为参考
         outcome[i] = expandPlateScope((l, h, lt, rt, fre), 0.1, row, col)
         print outcome[i],
         imshow = im.crop((outcome[i][2], outcome[i][0], outcome[i][3], outcome[i][1]))
         plateIm.append(imshow)
         imshow.show()
+    print
     hsv = [[0 for i in range(3)] for j in range(3)]
     ratio = [0.0 for i in range(3)]
 #    print len(plateIm)
@@ -223,10 +226,26 @@ def runFindPlate(im):#run run run
         hsv[i] = myhsv.RGBtoHSV(plateIm[i])
         ratio[i] = calculateBlueRatio(hsv[i][0], hsv[i][1], hsv[i][2])
     print "ratio : ",
-    print ratio[i], ratio[1], ratio[2]
-
-    print "DONE@"    
+    print ratio[0], ratio[1], ratio[2]
+#    mostPossibleIndexByRatio 
+    mo = findMax(ratio[0], ratio[1], ratio[2])
+    imOut = plateIm[mo]#找到最可能的车牌啦，下面对它作一次HSV的检验，找出蓝色车牌，切边
     
+    return imOut
+    
+    
+    print "DONE@"    
+
+def findMax(a, b, c):
+    if a > b:
+        if a > c:
+            return 0
+        else:
+            return 2
+    elif b < c:
+        return 2
+    else:
+        return 1
 #    l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex1, 0.5)#垂直定位函数（已找到其中一点的情况下）
 #    print "alternative low and high edge: " + str(((l, h)))
         
@@ -312,15 +331,23 @@ def expandPlateScope(outcome, percent, row, col):
 #S值范围： 0.35 ~ 1
 #V值范围： 0.3 ~ 1
 def calculateBlueRatio(h, s, v):
-    r = float(len(h))
+    r = len(h)
     c = len(h[1])
     count = 0
-    for i in zip(h, s, v):
-        if (i[0] >= 190 and i[0] <= 245 \
-            and i[1] >= 0.35 and i[1] <= 1
-            and i[2] >= 0.3 and i[2] <=1):
-            count = count + 1
-    return count / (r * c)
+    
+    for i in range(r):
+        for j in range(c):
+            if h[i][j] >= 190 and h[i][j] <= 245:
+                count = count + 1
+
+#    for i in zip(h, s, v):
+#        print "hsv h:",
+#        print i[0]
+#        if (i[0] >= 190 and i[0] <= 245):# \
+#            #and i[1] >= 0.35 and i[1] <= 1
+#            #and i[2] >= 0.3 and i[2] <=1):
+#            count = count + 1
+    return count / (float(r) * c)
     
 #runFindPlate("car7")
       

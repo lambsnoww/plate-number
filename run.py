@@ -6,11 +6,14 @@ Created on 2016年5月19日
 '''
 import Image, ImageDraw, ImageOps
 import mytools, mytools2, mytools3
+import mytoolshsv as mh
 
 def getChars():
     im = Image.open("CarPhotos/1.jpg")
 #    im = mytools.preprocess(im)#滤波+锐化+直方均衡化
-    mytools3.runFindPlate(im)
+    imOut = mytools3.runFindPlate(im)
+    #下面进行一次HSV检验
+    scopeIm = mh.findBlueareaFromIm(imOut)
     print "tt"
 
 getChars()
