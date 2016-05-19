@@ -270,7 +270,5 @@ def derivative(arr):
         b[i] = arr[i - 1] + arr[i]
     return b
 
-def getPlateImage(im):#这里的im是经过了初步处理的彩色全车照片
-    arr = np.array(im)
     
     

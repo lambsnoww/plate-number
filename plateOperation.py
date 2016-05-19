@@ -11,11 +11,11 @@ import colorsys
 import matplotlib.pyplot as plt
 import mytools as t1
 import mytools2 as t2
+import mytools3 as t3
 from itertools import count
 from _Res import Count1Resources
 import Queue
 from __builtin__ import False
-import refa as rf
 import collections
 import matlab
 import matlab.engine
@@ -54,7 +54,7 @@ def runGetCharacter(name):
     plateImOrigin = Image.open("cars/" + name + "/" + name + "Origin.jpg")        
     arr = np.array(plateImbi)
     #print arr
-    plateEdge =  rf.findPlateEdge(plateImbi)
+    plateEdge =  t3.findPlateEdge(plateImbi)
     
     r = list(plateImbi.size)[1]
     c = list(plateImbi.size)[0]
@@ -81,8 +81,8 @@ def runGetCharacter(name):
     
     
     verlen = e - s#车牌竖直长度
-    charArr = rf.getWhitepointSumArr(plateImbiCroped, 'c')
-    rf.drawWaveByRow(charArr, 100)
+    charArr = t3.getWhitepointSumArr(plateImbiCroped, 'c')
+    t3.drawWaveByRow(charArr, 100)
     setInfo = getSetInfo(charArr)
     print "set count: " + str(len(setInfo))
     

@@ -11,6 +11,7 @@ import colorsys
 import matplotlib.pyplot as plt
 import mytools as t1
 import mytools2 as t2
+import mytoolshsv as myhsv
 from itertools import count
 from _Res import Count1Resources
 import Queue
@@ -35,7 +36,7 @@ def getWhitepointSumArr(im, mode):
                     retArr[i] = retArr[i] + 1
     return retArr
 
-def findHorRange(im, ind):
+def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在的水平位置
 #    arr = getWhitepointSumArr(im, 'c')
 
     imArr = np.array(im)
@@ -52,24 +53,26 @@ def findHorRange(im, ind):
     for i in range(c):
 #        print "index: " + str(i)
         if imArr[ind][i] > 0: #这里只考虑二值化之后的
-
+#            print "i = %d, "%i
             if flag == False:
-#                print "first enter" + str(i)
+                #print "first enter" + str(i)
                 count = 1
                 flag = True
                 startIndex = i
                 endIndex = i
                 continue
             elif flag == True:
-#                print "second enter" + str(i)
+        
                 if (i - endIndex) <= interval:
+                    #print "<= interval, i = " + str(i)
                     endIndex = i
                     if i > 0:
                         if imArr[ind][i - 1] == 0:
                             count = count + 1
                     continue
                 elif (i - endIndex) > interval:
-#                    print "first come out" + str(i)
+                    #print ">= interval, i = " + str(i)
+                    #print "first come out" + str(i)
                     item = [startIndex, endIndex, count]
                     findList.append(item)
                     flag = True
@@ -79,7 +82,7 @@ def findHorRange(im, ind):
                     
                     continue
         else:
-            if i == c - 1 and  (i - endIndex) > interval:
+            if i == c - 1:# and  (i - endIndex) > interval:
                 item = [startIndex, endIndex, count]
                 findList.append(item)
                 break#都无所谓了，反正已经结束了
@@ -90,7 +93,8 @@ def findHorRange(im, ind):
         if findList[i][2] > maxCount:
             maxCount = findList[i][2]
             maxInd = i
-    
+#            print "maxIndex : %d"%maxInd
+#    print findList
     return findList[maxInd]
                 
 def expand(im, n, m):#这里是bi二值图像，一次扩张n个像素(一般n = 3）；第一个参数是row，第二个是col
@@ -156,11 +160,10 @@ def drawWaveByRow(arr, num):
     im = t2.getBiIm(brr)
     im.show()
     return im
-                
 
-def runFindPlate(name):
-    im = Image.open(name + ".jpg")#原图
-    im = t1.preprocess(im)
+def runFindPlate(im):#run run run
+#    im = Image.open(name + ".jpg")#原图
+#    im = t1.preprocess(im)
     imOrigin = im 
     imbw = im.convert("L")#黑白图
     imbwArr = np.array(imbw)#黑白图的矩阵
@@ -181,7 +184,7 @@ def runFindPlate(name):
     SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
     SmoothedWhitepointSumArr = t2.smooth(SmoothedWhitepointSumArr, 0.6)
     plt.plot(x, SmoothedWhitepointSumArr)
-    #plt.show()
+    plt.show()
             
     maxIndex1, maxIndex2, max1, max2 = t2.findMaxCouple(SmoothedWhitepointSumArr, 0.2)
     print "find max couple!"
@@ -191,8 +194,8 @@ def runFindPlate(name):
         
     l = int(l - (h - l) * 0.1)
     h = int(h + (h - l) * 0.1) #竖直定位完成
-    #cropedImXbw = imXbw.crop((0, l, c - 1, h))
-    #cropedImXbw.show()
+    cropedImXbi = imXbi.crop((0, l, c - 1, h))
+    cropedImXbi.show()
     m = int((l + h) / 2)
     lt, rt, fre = findHorRange(imXbi, m)
     outcome1 = (l, h, lt, rt, fre)
@@ -208,41 +211,74 @@ def runFindPlate(name):
     lt, rt, fre = findHorRange(imXbi, m)
     outcome2 = (l, h, lt, rt, fre)
     ########################################
-    if outcome1[4] > outcome2[4]:
-        outcome = outcome1
-    else:
-        outcome = outcome2
+#这里对outcome的选取考虑两个因素：fre和hsv蓝白比例。私以为第二个更重要
+    outcome1 = expandPlateScope(outcome1, 0.4)
+    outcome2 = expandPlateScope(outcome2, 0.4)
+    plateIm1 = im.crop((outcome1[2], outcome1[0], outcome1[3], outcome1[1]))
+    plateIm2 = im.crop((outcome2[2], outcome2[0], outcome2[3], outcome2[1]))
     
-    print outcome#(l, h, lt, rt, fre) vs (lt, l, rt, h)
+    h1, s1, v1 = myhsv.RGBtoHSV(plateIm1)
+    h2, s2, v2 = myhsv.RGBtoHSV(plateIm2)
+    
+#蓝色车牌
+#H值范围：190 ~ 245
+#S值范围： 0.35 ~ 1
+#V值范围： 0.3 ~ 1
+    
+
+    
+    ratio1 = calculateBlueRatio(h1, s1, v1)
+    ratio2 = calculateBlueRatio(h2, s2, v2)
+    print ratio1, ratio2
+    
+
+    
+    
+#    if outcome1[4] > outcome2[4]:
+#        outcome = outcome1
+#    else:
+#        outcome = outcome2
+    
+#    print outcome#(l, h, lt, rt, fre) vs (lt, l, rt, h)
     #cropedImFinal = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
     #cropedImFinal.show()
     #车牌已定位，暂时跳过倾斜校正
     
     
-    l, h, lt, rt, fre = outcome
-    le = int(l - (h - l) * 0.4)
-    he = int(h + (h - l) * 0.4)
-    lte = int(lt - (rt - lt) * 0.4)
-    rte = int(rt + (rt - lt) * 0.4)
+   
+#    plateIm = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
+#    plateImbw = plateIm.convert('L')
+#    plateImbw.show()
+#    plateImbi = t2.binaryzation(plateImbw, 220)
+#    plateImbi.show()
     
-    
-    
-    outcomeE = (le, he, lte, rte)#进行0.2的扩张边缘，以防车牌缺角
-    plateIm = im.crop((outcome[2], outcome[0], outcome[3], outcome[1]))
-    plateIm.show()
-    plateImbw = plateIm.convert('L')
-    plateImbw.show()
-    plateImbi = t2.binaryzation(plateImbw, 220)
-    plateImbi.show()
-    
-    os.makedirs("cars/" + name)#把车牌号存起来待用
-    plateImbi.save("cars/" + name + '/'+ name + ".bmp")
-    plateImbi.save("cars/" + name + '/'+ name + "bi.bmp")
-    plateIm.save("cars/" + name + '/'+ name + "Origin.jpg")
-    plateImbw.save("cars/" + name + '/'+ name + "bw.jpg")
+#    os.makedirs("cars/" + name)#把车牌号存起来待用
+#    plateImbi.save("cars/" + name + '/'+ name + ".bmp")
+#    plateImbi.save("cars/" + name + '/'+ name + "bi.bmp")
+#    plateIm.save("cars/" + name + '/'+ name + "Origin.jpg")
+#    plateImbw.save("cars/" + name + '/'+ name + "bw.jpg")
     
     print "DONE@"
-    
+
+def expandPlateScope(outcome, percent):
+    l, h, lt, rt, fre = outcome
+    le = int(l - (h - l) * percent)
+    he = int(h + (h - l) * percent)
+    lte = int(lt - (rt - lt) * percent)
+    rte = int(rt + (rt - lt) * percent)  
+    outcomeE = (le, he, lte, rte, fre)#进行0.2的扩张边缘，以防车牌缺角
+    return outcomeE
+
+def calculateBlueRatio(h, s, v):
+    r = float(len(h))
+    c = len(h[1])
+    count = 0
+    for i in zip(h, s, v):
+        if (i[0] >= 190 and i[0] <= 245 \
+            and i[1] >= 0.35 and i[1] <= 1
+            and i[2] >= 0.3 and i[2] <=1):
+            count = count + 1
+    return count / (r * c)        
     
 #runFindPlate("car7")
       

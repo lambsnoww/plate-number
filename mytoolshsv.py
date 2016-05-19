@@ -20,17 +20,17 @@ def RGBtoHSV(im):
         for j in range(col):
             a = [elem / 255. for elem in arr[i][j]]
             r, g, b = a
-            max = findMaxArr(a)
-            if max == -1:
+            maxIndex = findmaxArr(a)
+            if maxIndex == -1:
                 h[i][j] = 0
-            elif max == 0 and g >= b:
-                h[i][j] = 60 * (g - b) / (a[max] - min(a))
-            elif max == 0 and g < b:
-                h[i][j] = 60 * (g - b) / (a[max] - min(a)) + 360
-            elif max == 1:
-                h[i][j] = 60 * (b - r) / (a[max] - min(a)) + 120
-            elif max == 2:
-                h[i][j] = 60 * (r - g) / (a[max] - min(a)) + 240
+            elif maxIndex == 0 and g >= b:
+                h[i][j] = 60 * (g - b) / (a[maxIndex] - min(a))
+            elif maxIndex == 0 and g < b:
+                h[i][j] = 60 * (g - b) / (a[maxIndex] - min(a)) + 360
+            elif maxIndex == 1:
+                h[i][j] = 60 * (b - r) / (a[maxIndex] - min(a)) + 120
+            elif maxIndex == 2:
+                h[i][j] = 60 * (r - g) / (a[maxIndex] - min(a)) + 240
             
             if max(a) == 0:
                 s[i][j] = 0
@@ -42,7 +42,7 @@ def RGBtoHSV(im):
     return (h, s, v)
        
 
-def findMaxArr(arr):
+def findmaxArr(arr):
     if arr[0] == arr[1] and arr[1] == arr[2]:
         return -1
     if arr[0] > arr[1]:
@@ -62,6 +62,8 @@ if __name__ == "__main__":
     
     im = Image.open("CarPhotos/1.jpg")
     arr = np.array(im)
-    imout = HSVColor(im)
-    imout.show()
+    h, s, v = RGBtoHSV(im)
+    print h
+    print s
+    print v
 #    print len(arr), len(arr[0]), len(arr[0][0])
