@@ -208,11 +208,12 @@ def runFindPlate(im):#run run run
         l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex[i], 0.5)
 #        l = int(l - (h - l * 0.1))
 #        h = int(l - (h - l * 0.1))
+        print "l, h = %d, %d"%(l, h)
         m = int((l + h) / 2)
         lt, rt, fre = findHorRange(imXbi, m)
         outcome[i] = (l, h, lt, rt, fre)
         #outcome的最后一个量fre代表频率次数，一般越大，可能性越高，但也不绝对，因此只能作为参考
-        outcome[i] = expandPlateScope((l, h, lt, rt, fre), 0.1, row, col)
+        outcome[i] = expandPlateScope((l, h, lt, rt, fre), 0.1, 0, row, col)
         print outcome[i],
         imshow = im.crop((outcome[i][2], outcome[i][0], outcome[i][3], outcome[i][1]))
         plateIm.append(imshow)
@@ -317,12 +318,12 @@ def findMax(a, b, c):
     
     
 
-def expandPlateScope(outcome, percent, row, col):
+def expandPlateScope(outcome, percent1, percent2, row, col):
     l, h, lt, rt, fre = outcome
-    le = max(0, int(l - (h - l) * percent))
-    he = min(row - 1, int(h + (h - l) * percent))
-    lte = max(0, int(lt - (rt - lt) * percent))
-    rte = min(col - 1, int(rt + (rt - lt) * percent))  
+    le = max(0, int(l - (h - l) * percent1))
+    he = min(row - 1, int(h + (h - l) * percent1))
+    lte = max(0, int(lt - (rt - lt) * percent2))
+    rte = min(col - 1, int(rt + (rt - lt) * percent2))  
     outcomeE = (le, he, lte, rte, fre)#进行0.2的扩张边缘，以防车牌缺角
     return outcomeE
 

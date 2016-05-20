@@ -203,24 +203,28 @@ def findMaxTriple(a, rangePercent):
 def findVerRange(arr, maxIndex, scop):#找到车牌的竖直位置范围
 #    per = (0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45)
     per = (0.025, 0.05, 0.075, 0.1, 0.125, 0.15, 0.175, 0.2, 0.215, 0.25, 0.275, 0.3, 0.35, 0.4, 0.45 )
+    step = len(arr) / 5
     for i in range(0, len(per)):
-        a = min(int(maxIndex * (1 + per[i])), len(arr) - 1)
-        if (arr[a] > (arr[maxIndex] * scop)):
+#        a = min(int(maxIndex * (1 + per[i])), len(arr) - 1)
+        a = int(maxIndex + step * per[i])#按照maxIndex的比例来做不合理，应有统一的尺度
+        if (a < len(arr) and arr[a] > (arr[maxIndex] * scop)):
 #            print arr[maxIndex]
 #            print (arr[a], (arr[maxIndex] * scop))
             continue
         else:
             break
-    hIndex = int(maxIndex * (1 + per[i]))
+    hIndex = a
+#    hIndex = max(0, int(maxIndex * (1 + per[i])))
     
     for i in range(0, len(per)):
-        b = max(int(maxIndex * (1 - per[i])), 0)
-        if (arr[b] > (arr[maxIndex] * scop)):
+#        b = max(int(maxIndex * (1 - per[i])), 0)
+        b = int(maxIndex - step * per[i])
+        if (b >= 0 and arr[b] > (arr[maxIndex] * scop)):
             continue
         else:
             break
-    lIndex = int(maxIndex * (1 - per[i]))
-    
+#    lIndex = min(len(arr) - 1, int(maxIndex * (1 - per[i])))
+    lIndex = b
     return (lIndex, hIndex)
  
 def decideFromTowAlternative(im, alt1, alt2):#二者择一，根据定长范围内点多点少
