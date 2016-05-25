@@ -40,9 +40,9 @@ def getWhitepointSumArr(im, mode):
 #返回(startIndex, endIndex, count)三元组，其中count达到最大
 def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在的水平位置
 #    arr = getWhitepointSumArr(im, 'c')
-
+#    im.show()
     imArr = np.array(im)
-#    print imArr[ind]
+    print imArr[ind]
     r = len(imArr)
     c = len(imArr[0])
 
@@ -99,7 +99,8 @@ def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在�
 #    print findList
     return findList[maxInd]
                 
-def expand(im, n, m):#这里是bi二值图像，一次扩张n个像素(一般n = 3）；第一个参数是row，第二个是col
+def expand(im, n, m):#膨胀算法
+    #这里是bi二值图像，一次扩张n个像素(一般n = 3）；第一个参数是row，第二个是col
     arr = np.array(im)
     r = len(arr)
     c = len(arr[0])
@@ -160,7 +161,7 @@ def drawWaveByRow(arr, num):
                 brr[j][i] = 0
     
     im = t2.getBiIm(brr)
-    im.show()
+#    im.show()
     return im
 
 def runFindPlate(im):#run run run
@@ -217,7 +218,7 @@ def runFindPlate(im):#run run run
         print outcome[i],
         imshow = im.crop((outcome[i][2], outcome[i][0], outcome[i][3], outcome[i][1]))
         plateIm.append(imshow)
-        imshow.show()
+########        imshow.show()
     print
     hsv = [[0 for i in range(3)] for j in range(3)]
     ratio = [0.0 for i in range(3)]
@@ -230,12 +231,12 @@ def runFindPlate(im):#run run run
     print ratio[0], ratio[1], ratio[2]
 #    mostPossibleIndexByRatio 
     mo = findMax(ratio[0], ratio[1], ratio[2])
-    imOut = plateIm[mo]#找到最可能的车牌啦，下面对它作一次HSV的检验，找出蓝色车牌，切边
-    
+    imOut = plateIm[mo]#找到最可能的车牌，下面对它作一次HSV的检验，找出蓝色车牌，切边
+
     return imOut
     
     
-    print "DONE@"    
+    print "DONE@t3.runFindPlate"    
 
 def findMax(a, b, c):
     if a > b:

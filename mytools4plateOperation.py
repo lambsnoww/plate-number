@@ -48,10 +48,10 @@ def getSetInfo(arr):
 #    diviedeQueue = Queue.Queue(-1)#容量为7
 #    for i in range():
         
-def runGetCharacter(name):
-    plateImbi = Image.open("cars/" + name + "/" + name + ".bmp")        
-    plateImbw = Image.open("cars/" + name + "/" + name + "bw.jpg")        
-    plateImOrigin = Image.open("cars/" + name + "/" + name + "Origin.jpg")        
+def runGetCharacter(plateImbi):
+#    plateImbi = Image.open("cars/" + name + "/" + name + ".bmp")        
+#    plateImbw = Image.open("cars/" + name + "/" + name + "bw.jpg")        
+#    plateImOrigin = Image.open("cars/" + name + "/" + name + "Origin.jpg")        
     arr = np.array(plateImbi)
     #print arr
     plateEdge =  t3.findPlateEdge(plateImbi)
@@ -72,8 +72,8 @@ def runGetCharacter(name):
     print (s, e)
     #水平下刀切割
     plateImbiCroped = plateImbi.crop((0, s, list(plateImbi.size)[0], e + 1))
-    plateImbwCroped = plateImbw.crop((0, s, list(plateImbw.size)[0], e + 1))
-    plateImCroped = plateImOrigin.crop((0, s, list(plateImbw.size)[0], e + 1))
+#    plateImbwCroped = plateImbw.crop((0, s, list(plateImbw.size)[0], e + 1))
+#    plateImCroped = plateImOrigin.crop((0, s, list(plateImbw.size)[0], e + 1))
     
 #    plateImbiCroped.show()#经过水平切割后的车牌，下面进行垂直切割
     r = list(plateImbiCroped.size)[1]
@@ -143,5 +143,5 @@ def runGetCharacter(name):
         imtmp.save(str(i) + ".bmp")
         i = i + 1
 
-runGetCharacter("car7")
+#runGetCharacter("car7")
 
