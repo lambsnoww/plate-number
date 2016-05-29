@@ -53,9 +53,14 @@ def runGetCharacter(plateImbi):
 #    plateImbw = Image.open("cars/" + name + "/" + name + "bw.jpg")        
 #    plateImOrigin = Image.open("cars/" + name + "/" + name + "Origin.jpg")        
     arr = np.array(plateImbi)
+    t3.printArr(arr)
+    plateRow = len(arr)
+    plateCol = len(arr[0])
+    plateColTheory = int(float(plateRow) * 440 / 90)
     #print arr
     plateEdge =  t3.findPlateEdge(plateImbi)
-    
+    print "plate Edge : ",
+    print plateEdge
     r = list(plateImbi.size)[1]
     c = list(plateImbi.size)[0]
     flag = False
@@ -76,13 +81,14 @@ def runGetCharacter(plateImbi):
 #    plateImCroped = plateImOrigin.crop((0, s, list(plateImbw.size)[0], e + 1))
     
 #    plateImbiCroped.show()#经过水平切割后的车牌，下面进行垂直切割
+    plateImbiCroped.save("plateBi.bmp")
     r = list(plateImbiCroped.size)[1]
     c = list(plateImbiCroped.size)[0]
     
     
     verlen = e - s#车牌竖直长度
     charArr = t3.getWhitepointSumArr(plateImbiCroped, 'c')
-    t3.drawWaveByRow(charArr, 100)
+#    t3.drawWaveByRow(charArr, 100)#这里的代码有问题，被0除
     setInfo = getSetInfo(charArr)
     print "set count: " + str(len(setInfo))
     
@@ -99,27 +105,23 @@ def runGetCharacter(plateImbi):
     print [lower, widestInterval, higher]
     
     bimyqueueForCharacter = collections.deque()
-    bwmyqueueForCharacter = collections.deque()
-    ormyqueueForCharacter = collections.deque()
+#    bwmyqueueForCharacter = collections.deque()
+#    ormyqueueForCharacter = collections.deque()
     lastElem = setInfo.__getitem__(0)
   
     for elem in setInfo:
         s, e, dis = elem
         imbi = plateImbiCroped.crop((s, 0, e + 1, r))#注意crop是不包含结尾的
-        imbw = plateImbwCroped.crop((s, 0, e + 1, r))#注意crop是不包含结尾的
-        im = plateImCroped.crop((s, 0, e + 1, r))#注意crop是不包含结尾的
+#        imbw = plateImbwCroped.crop((s, 0, e + 1, r))#注意crop是不包含结尾的
+#        im = plateImCroped.crop((s, 0, e + 1, r))#注意crop是不包含结尾的
         bimyqueueForCharacter.append(imbi)
-        bwmyqueueForCharacter.append(imbw)
-        ormyqueueForCharacter.append(im)
-    if setInfo.__len__() > 7:
-        bimyqueueForCharacter.popleft()
-        bwmyqueueForCharacter.popleft()
-        ormyqueueForCharacter.popleft()
-    if setInfo.__len__() > 7:
-        bimyqueueForCharacter.pop()
-        bwmyqueueForCharacter.pop()
-        ormyqueueForCharacter.pop()
-        
+#        bwmyqueueForCharacter.append(imbw)
+#        ormyqueueForCharacter.append(im)
+
+    while len(bimyqueueForCharacter) > 7:
+        ind = findImWithMinWidth(bimyqueueForCharacter)
+        popInd(bimyqueueForCharacter, ind)
+
 #    os.mkdir("cars/" + name + '/bi')
 #    os.mkdir("cars/" + name + '/bw')
 #    os.mkdir("cars/" + name + '/origin')
@@ -137,11 +139,30 @@ def runGetCharacter(plateImbi):
 #        i = i + 1
 #        elem.save("cars/" + name + "/origin/" + str(i) + ".jpg")
     i = 1
-    for elem in bwmyqueueForCharacter:
-        imtmp = elem.resize((20, 22))
-        imtmp = t2.binaryzation(imtmp, 180)
+    for elem in bimyqueueForCharacter:
+#        imtmp = elem.resize((20, 22))
+        imtmp = t2.binaryzation(elem, 180)
         imtmp.save(str(i) + ".bmp")
         i = i + 1
 
+def findImWithMinWidth(dq):
+    minWidth = 300
+    for i in range(dq.__len__()):
+        im = dq.popleft()
+        dq.append(im)
+        if minWidth > list(im.size)[1]:
+            minWidth = list(im.size)[1]
+            minIndex = i
+    print "minIndex = %d, "%i,
+    return minIndex
+
+def popInd(dq, ind):
+    for i in range(dq.__len__()):
+        im = dq.popleft()
+        if i == ind:
+            continue
+        else:
+            dq.append(im)
+                   
 #runGetCharacter("car7")
 

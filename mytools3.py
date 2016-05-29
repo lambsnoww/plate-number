@@ -42,7 +42,7 @@ def findHorRange(im, ind):#对二值化的图片横长条，找到车牌所在�
 #    arr = getWhitepointSumArr(im, 'c')
 #    im.show()
     imArr = np.array(im)
-    print imArr[ind]
+#    print imArr[ind]
     r = len(imArr)
     c = len(imArr[0])
 
@@ -203,8 +203,8 @@ def runFindPlate(im):#run run run
 #    fre = [0 for i in range(3)]
     outcome = [(0,0,0,0,0) for i in range(3)]
     plateIm = []
-    print "outcome :",
     for i in range(3):
+        print "%d :"%i
         #垂直定位函数（已找到其中一点的情况下）
         l, h = t2.findVerRange(SmoothedWhitepointSumArr, maxIndex[i], 0.5)
 #        l = int(l - (h - l * 0.1))
@@ -215,6 +215,7 @@ def runFindPlate(im):#run run run
         outcome[i] = (l, h, lt, rt, fre)
         #outcome的最后一个量fre代表频率次数，一般越大，可能性越高，但也不绝对，因此只能作为参考
         outcome[i] = expandPlateScope((l, h, lt, rt, fre), 0.1, 0, row, col)
+        print "outcome",
         print outcome[i],
         imshow = im.crop((outcome[i][2], outcome[i][0], outcome[i][3], outcome[i][1]))
         plateIm.append(imshow)
