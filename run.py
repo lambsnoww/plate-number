@@ -16,11 +16,11 @@ import os
 
 def getChars():
     im = Image.open("Cars_small/42.jpg")
-#    im = t1.preprocess(im)#滤波+锐化+直方均衡化
+    im = t1.preprocess(im)#滤波+锐化+直方均衡化
     imOut = t3.runFindPlate(im)
     imOut.show()#正确
     #下面进行一次HSV检验
-    scopeIm = mh.findBlueareaFromIm(imOut)
+#    scopeIm = mh.findBlueareaFromIm(imOut)
     imBw = imOut.convert('L')
 
     imBi = t2.binaryzation(imBw, 100)#当时第二个参数太大了

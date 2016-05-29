@@ -99,6 +99,7 @@ def preprocess(im):
     im = userFilter(im, "filter")    
     im = userFilter(im, "sharpen")    
     im = hist(im)
+#    im.save("processedImage.jpg")
     return im
     
 

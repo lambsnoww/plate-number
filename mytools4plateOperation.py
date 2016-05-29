@@ -107,7 +107,7 @@ def runGetCharacter(plateImbi):
     bimyqueueForCharacter = collections.deque()
 #    bwmyqueueForCharacter = collections.deque()
 #    ormyqueueForCharacter = collections.deque()
-    lastElem = setInfo.__getitem__(0)
+#    lastElem = setInfo.__getitem__(0)
   
     for elem in setInfo:
         s, e, dis = elem
@@ -167,5 +167,4 @@ def popInd(dq, ind):
         else:
             dq.append(im)
                    
-#runGetCharacter("car7")
 
