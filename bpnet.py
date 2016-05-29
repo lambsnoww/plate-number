@@ -15,7 +15,6 @@ import mytools2 as t2
 from itertools import count
 from _Res import Count1Resources
 from __builtin__ import False
-import refa as rf
 import collections
 import matlab
 import matlab.engine

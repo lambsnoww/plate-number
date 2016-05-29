@@ -149,11 +149,14 @@ def findImWithMinWidth(dq):
     minWidth = 300
     for i in range(dq.__len__()):
         im = dq.popleft()
+#        arr = np.array(im)
+#        t3.printArr(arr)
         dq.append(im)
-        if minWidth > list(im.size)[1]:
-            minWidth = list(im.size)[1]
+#        print "minWidthNow = %d, cols = %d; "%(minWidth, list(im.size)[1])
+        if minWidth > list(im.size)[0]:#im.size先列后行，注意了
+            minWidth = list(im.size)[0]
             minIndex = i
-    print "minIndex = %d, "%i,
+    print "minIndex = %d, minWidth = %d; "%(minIndex,minWidth)
     return minIndex
 
 def popInd(dq, ind):

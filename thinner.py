@@ -24,16 +24,17 @@ def thin(eng, name):#调用matlab的bwmorph对图像进行细化 and 保存为jp
     print "Start thin process"
     eng.eval("imbi = imread('%d.bmp');"%name, nargout = 0)
     eng.eval("imthin = bwmorph(imbi, 'thin', Inf);", nargout = 0)
-    imbipy = Image.open('1.bmp')
+    openStr = "%d.bmp"%name#不可以直接写在open字符串中，只能这样写
+    imbipy = Image.open(openStr)
     c = list(imbipy.size)[0]
     r = list(imbipy.size)[1]
     print "c, r = " + str(c) + ',' + str(r)
     eval_str = "imshow(imthin,'border','tight','initialmagnification','fit');\
         set (gcf,'Position',[0,0,%d,%d]);axis normal;"%(c, r)
     eng.eval(eval_str, nargout = 0)
-    eng.eval("imwrite(imthin,'%d.jpg', 'jpg');"%name, nargout = 0)#这个才好用
+    eng.eval("imwrite(imthin,'getData/%d.jpg', 'jpg');"%name, nargout = 0)#这个才好用
 #    eng.eval("saveas(gcf, '2thin', 'bmp');", nargout = 0)
-    print "Thinned pic saved!"
+    print "%name : Thinned pic saved!"
 
 def getNumberOfVerticalLines(im):#返回有多少条竖直线，各有多长
 #    im = Image.open(name + '.bmp')
@@ -142,13 +143,17 @@ def getEdgePointsPosition(im):#返回左上、左下、右上、右下点的坐�
                 break
     return ret
     
-    
-if __name__ == "__main__":
+def saveThinnedImage(num):
     print "Initializing Matlab Engine"
     eng = matlab.engine.start_matlab()
     print "Initializing Complete!"
+    for i in range(num):
+        thin(eng, i + 1)
+    
+if __name__ == "__main__":
+
     name = 3
-    thin(eng, name)
+
     im = Image.open(str(name) + ".jpg")
     verLines, lines = getNumberOfVerticalLines(im)
     print "vetical lines: " + str(verLines)
